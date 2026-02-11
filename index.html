@@ -3,56 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Study Dashboard</title>
+    <title>Nexus Study OS</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
-<body>
+<body class="theme-deep">
 
     <div class="glass-card">
-        <h2>🎯 Study Goals</h2>
-        <div class="input-group">
-            <input type="text" id="taskInput" placeholder="Add a goal...">
-            <button onclick="addTask()">Add</button>
+        <div class="top-bar">
+            <div id="greeting-container">
+                <h2 id="greeting">Hello, Developer</h2>
+                <p id="quote">"Code is poetry."</p>
+            </div>
+            <button onclick="toggleTheme()" class="theme-toggle">🌓</button>
         </div>
-        <ul id="taskList"></ul>
+
+        <div class="timer-card">
+            <div class="timer-circle">
+                <svg>
+                    <circle cx="70" cy="70" r="70"></circle>
+                    <circle id="progressCircle" cx="70" cy="70" r="70"></circle>
+                </svg>
+                <h3 id="timerDisplay">25:00</h3>
+            </div>
+            <div class="timer-actions">
+                <button onclick="toggleTimer()" id="timerBtn">START SESSION</button>
+                <button onclick="resetTimer()">RESET</button>
+            </div>
+        </div>
+
+        <div class="task-section">
+            <div class="progress-info">
+                <span>Task Mastery</span>
+                <span id="stats">0/0</span>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="taskInput" placeholder="Deploy new goal...">
+                <button onclick="addTask()">+</button>
+            </div>
+            <ul id="taskList"></ul>
+        </div>
     </div>
 
+    <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+    <audio id="completeSound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+
     <script>
-        // Load tasks on startup
+        let tasks = JSON.parse(localStorage.getItem("nexusTasks")) || [];
+        let timerSeconds = 1500;
+        let totalSeconds = 1500;
+        let timerInterval = null;
+        let currentTheme = 0;
+        const themes = ['theme-deep', 'theme-cyber', 'theme-forest'];
+
+        const quotes = [
+            "Consistent action creates results.",
+            "Stay hungry, stay foolish.",
+            "Don't stop until you're proud.",
+            "Logic is the beginning of wisdom.",
+            "Make it work, make it right, make it fast."
+        ];
+
         window.onload = () => {
-            const savedTasks = JSON.parse(localStorage.getItem("myTasks")) || [];
-            savedTasks.forEach(task => renderTask(task));
+            updateTime();
+            renderAll();
+            setRandomQuote();
+            setInterval(updateTime, 60000);
         };
 
+        function setRandomQuote() {
+            document.getElementById('quote').innerText = `"${quotes[Math.floor(Math.random()*quotes.length)]}"`;
+        }
+
+        function toggleTheme() {
+            document.body.classList.remove(themes[currentTheme]);
+            currentTheme = (currentTheme + 1) % themes.length;
+            document.body.classList.add(themes[currentTheme]);
+        }
+
+        function playSound(id) {
+            const sound = document.getElementById(id);
+            sound.currentTime = 0;
+            sound.play();
+        }
+
+        // --- TIMER LOGIC ---
+        function toggleTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                document.getElementById('timerBtn').innerText = "RESUME";
+            } else {
+                timerInterval = setInterval(() => {
+                    if (timerSeconds > 0) {
+                        timerSeconds--;
+                        updateTimerUI();
+                    } else {
+                        clearInterval(timerInterval);
+                        playSound('completeSound');
+                        confetti();
+                    }
+                }, 1000);
+                document.getElementById('timerBtn').innerText = "PAUSE";
+            }
+        }
+
+        function updateTimerUI() {
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            document.getElementById('timerDisplay').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            
+            // Circular progress math
+            const offset = 440 - (timerSeconds / totalSeconds) * 440;
+            document.getElementById('progressCircle').style.strokeDashoffset = offset;
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerSeconds = 1500;
+            updateTimerUI();
+            document.getElementById('timerBtn').innerText = "START SESSION";
+        }
+
+        // --- TASK LOGIC ---
         function addTask() {
             const input = document.getElementById('taskInput');
             if (input.value.trim() === '') return;
-
-            renderTask(input.value);
-            saveTask(input.value);
+            tasks.push({ text: input.value, completed: false });
+            saveAndRender();
             input.value = '';
+            playSound('clickSound');
         }
 
-        function renderTask(text) {
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <span>${text}</span>
-                <button class="delete-btn" onclick="removeTask(this, '${text}')">❌</button>
-            `;
-            document.getElementById('taskList').appendChild(li);
+        function toggleTask(i) {
+            tasks[i].completed = !tasks[i].completed;
+            if (tasks[i].completed) {
+                playSound('completeSound');
+                if (tasks.every(t => t.completed)) confetti();
+            }
+            saveAndRender();
         }
 
-        function saveTask(text) {
-            const tasks = JSON.parse(localStorage.getItem("myTasks")) || [];
-            tasks.push(text);
-            localStorage.setItem("myTasks", JSON.stringify(tasks));
+        function saveAndRender() {
+            localStorage.setItem("nexusTasks", JSON.stringify(tasks));
+            renderAll();
         }
 
-        function removeTask(element, text) {
-            element.parentElement.remove();
-            let tasks = JSON.parse(localStorage.getItem("myTasks")) || [];
-            tasks = tasks.filter(t => t !== text);
-            localStorage.setItem("myTasks", JSON.stringify(tasks));
+        function renderAll() {
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+            let done = tasks.filter(t => t.completed).length;
+
+            tasks.forEach((t, i) => {
+                const li = document.createElement('li');
+                li.className = t.completed ? 'completed' : '';
+                li.innerHTML = `<span onclick="toggleTask(${i})">${t.text}</span><button onclick="removeTask(${i})">✕</button>`;
+                list.appendChild(li);
+            });
+
+            const percent = tasks.length ? (done / tasks.length) * 100 : 0;
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('stats').innerText = `${done}/${tasks.length}`;
+        }
+
+        function removeTask(i) { tasks.splice(i, 1); saveAndRender(); }
+
+        function updateTime() {
+            const h = new Date().getHours();
+            const greet = h < 12 ? "Good Morning" : h < 18 ? "Good Afternoon" : "Good Evening";
+            document.getElementById('greeting').innerText = `${greet}, Nathaniel`;
         }
     </script>
 </body>
