@@ -3,181 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Study OS</title>
+    <title>AETHER // Study OS</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
-<body class="theme-deep">
+<body>
+    <div class="mesh-gradient"></div>
 
-    <div class="glass-card">
-        <div class="top-bar">
-            <div id="greeting-container">
-                <h2 id="greeting">Hello, Developer</h2>
-                <p id="quote">"Code is poetry."</p>
+    <main class="app-container">
+        <nav class="sidebar">
+            <div class="logo"><i data-lucide="zap"></i></div>
+            <div class="nav-links">
+                <i data-lucide="layout-dashboard" class="active"></i>
+                <i data-lucide="book-open"></i>
+                <i data-lucide="settings"></i>
             </div>
-            <button onclick="toggleTheme()" class="theme-toggle">🌓</button>
-        </div>
+            <div class="profile">N</div>
+        </nav>
 
-        <div class="timer-card">
-            <div class="timer-circle">
-                <svg>
-                    <circle cx="70" cy="70" r="70"></circle>
-                    <circle id="progressCircle" cx="70" cy="70" r="70"></circle>
-                </svg>
-                <h3 id="timerDisplay">25:00</h3>
+        <section class="content">
+            <header>
+                <div class="greet-box">
+                    <h1 id="greeting">System: Active</h1>
+                    <p id="quote">Initializing study protocols...</p>
+                </div>
+                <div class="time-widget">
+                    <span id="digital-clock">00:00:00</span>
+                </div>
+            </header>
+
+            <div class="grid-layout">
+                <div class="card focus-engine">
+                    <div class="card-header">
+                        <span><i data-lucide="timer"></i> Focus Engine</span>
+                    </div>
+                    <div class="timer-display">
+                        <svg class="progress-ring" width="200" height="200">
+                            <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.05)" stroke-width="8" fill="transparent" r="90" cx="100" cy="100"/>
+                            <circle id="timer-progress" class="progress-ring__circle" stroke="url(#gradient)" stroke-width="8" stroke-linecap="round" fill="transparent" r="90" cx="100" cy="100"/>
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#8B5CF6" />
+                                    <stop offset="100%" stop-color="#EC4899" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="timer-text">
+                            <h2 id="timer-val">25:00</h2>
+                            <p>Pomodoro</p>
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <button onclick="toggleTimer()" id="play-btn" class="primary-btn"><i data-lucide="play"></i></button>
+                        <button onclick="resetTimer()" class="secondary-btn"><i data-lucide="refresh-cw"></i></button>
+                    </div>
+                </div>
+
+                <div class="card task-engine">
+                    <div class="card-header">
+                        <span><i data-lucide="list-checks"></i> Neural Tasks</span>
+                        <span id="task-count">0/0</span>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="text" id="task-input" placeholder="Neural link new task...">
+                        <button onclick="addTask()"><i data-lucide="plus"></i></button>
+                    </div>
+                    <ul id="task-list" class="custom-scroll"></ul>
+                </div>
             </div>
-            <div class="timer-actions">
-                <button onclick="toggleTimer()" id="timerBtn">START SESSION</button>
-                <button onclick="resetTimer()">RESET</button>
-            </div>
-        </div>
+        </section>
+    </main>
 
-        <div class="task-section">
-            <div class="progress-info">
-                <span>Task Mastery</span>
-                <span id="stats">0/0</span>
-            </div>
-            <div class="progress-container">
-                <div class="progress-bar" id="progressBar"></div>
-            </div>
-
-            <div class="input-group">
-                <input type="text" id="taskInput" placeholder="Deploy new goal...">
-                <button onclick="addTask()">+</button>
-            </div>
-            <ul id="taskList"></ul>
-        </div>
-    </div>
-
-    <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
-    <audio id="completeSound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
-
-    <script>
-        let tasks = JSON.parse(localStorage.getItem("nexusTasks")) || [];
-        let timerSeconds = 1500;
-        let totalSeconds = 1500;
-        let timerInterval = null;
-        let currentTheme = 0;
-        const themes = ['theme-deep', 'theme-cyber', 'theme-forest'];
-
-        const quotes = [
-            "Consistent action creates results.",
-            "Stay hungry, stay foolish.",
-            "Don't stop until you're proud.",
-            "Logic is the beginning of wisdom.",
-            "Make it work, make it right, make it fast."
-        ];
-
-        window.onload = () => {
-            updateTime();
-            renderAll();
-            setRandomQuote();
-            setInterval(updateTime, 60000);
-        };
-
-        function setRandomQuote() {
-            document.getElementById('quote').innerText = `"${quotes[Math.floor(Math.random()*quotes.length)]}"`;
-        }
-
-        function toggleTheme() {
-            document.body.classList.remove(themes[currentTheme]);
-            currentTheme = (currentTheme + 1) % themes.length;
-            document.body.classList.add(themes[currentTheme]);
-        }
-
-        function playSound(id) {
-            const sound = document.getElementById(id);
-            sound.currentTime = 0;
-            sound.play();
-        }
-
-        // --- TIMER LOGIC ---
-        function toggleTimer() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                document.getElementById('timerBtn').innerText = "RESUME";
-            } else {
-                timerInterval = setInterval(() => {
-                    if (timerSeconds > 0) {
-                        timerSeconds--;
-                        updateTimerUI();
-                    } else {
-                        clearInterval(timerInterval);
-                        playSound('completeSound');
-                        confetti();
-                    }
-                }, 1000);
-                document.getElementById('timerBtn').innerText = "PAUSE";
-            }
-        }
-
-        function updateTimerUI() {
-            const mins = Math.floor(timerSeconds / 60);
-            const secs = timerSeconds % 60;
-            document.getElementById('timerDisplay').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            
-            // Circular progress math
-            const offset = 440 - (timerSeconds / totalSeconds) * 440;
-            document.getElementById('progressCircle').style.strokeDashoffset = offset;
-        }
-
-        function resetTimer() {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            timerSeconds = 1500;
-            updateTimerUI();
-            document.getElementById('timerBtn').innerText = "START SESSION";
-        }
-
-        // --- TASK LOGIC ---
-        function addTask() {
-            const input = document.getElementById('taskInput');
-            if (input.value.trim() === '') return;
-            tasks.push({ text: input.value, completed: false });
-            saveAndRender();
-            input.value = '';
-            playSound('clickSound');
-        }
-
-        function toggleTask(i) {
-            tasks[i].completed = !tasks[i].completed;
-            if (tasks[i].completed) {
-                playSound('completeSound');
-                if (tasks.every(t => t.completed)) confetti();
-            }
-            saveAndRender();
-        }
-
-        function saveAndRender() {
-            localStorage.setItem("nexusTasks", JSON.stringify(tasks));
-            renderAll();
-        }
-
-        function renderAll() {
-            const list = document.getElementById('taskList');
-            list.innerHTML = '';
-            let done = tasks.filter(t => t.completed).length;
-
-            tasks.forEach((t, i) => {
-                const li = document.createElement('li');
-                li.className = t.completed ? 'completed' : '';
-                li.innerHTML = `<span onclick="toggleTask(${i})">${t.text}</span><button onclick="removeTask(${i})">✕</button>`;
-                list.appendChild(li);
-            });
-
-            const percent = tasks.length ? (done / tasks.length) * 100 : 0;
-            document.getElementById('progressBar').style.width = percent + '%';
-            document.getElementById('stats').innerText = `${done}/${tasks.length}`;
-        }
-
-        function removeTask(i) { tasks.splice(i, 1); saveAndRender(); }
-
-        function updateTime() {
-            const h = new Date().getHours();
-            const greet = h < 12 ? "Good Morning" : h < 18 ? "Good Afternoon" : "Good Evening";
-            document.getElementById('greeting').innerText = `${greet}, Nathaniel`;
-        }
-    </script>
+    <script src="script.js"></script>
+    <script>lucide.createIcons();</script>
 </body>
 </html>
