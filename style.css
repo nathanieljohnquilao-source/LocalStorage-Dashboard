@@ -1,94 +1,69 @@
-/* General Page Styling */
+:root {
+    --bg: #0a0a0c;
+    --card: rgba(20, 20, 25, 0.8);
+    --accent: #6366f1;
+    --text: #ffffff;
+}
+
+.theme-cyber { --bg: #05010d; --accent: #ff007b; --card: rgba(15, 0, 30, 0.8); }
+.theme-forest { --bg: #0a100d; --accent: #2ecc71; --card: rgba(20, 30, 25, 0.8); }
+
 body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--bg);
+    margin: 0;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    margin: 0;
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    transition: 0.5s ease;
 }
 
-/* Glassmorphism Effect */
 .glass-card {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px); /* Support for Safari */
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 2.5rem;
-    border-radius: 24px;
-    width: 90%;
-    max-width: 400px;
-    color: white;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    background: var(--card);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 30px;
+    border-radius: 40px;
+    width: 400px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6);
 }
 
-h2 {
-    margin-top: 0;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
+.top-bar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; }
+#greeting { margin: 0; font-size: 1.2rem; }
+#quote { margin: 5px 0 0 0; font-size: 0.8rem; opacity: 0.5; font-style: italic; }
 
-/* Input Area */
-.input-group {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
+.theme-toggle { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
 
-input {
-    flex: 1;
-    padding: 12px;
-    border-radius: 12px;
-    border: none;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    outline: none;
-}
+/* Circular Timer */
+.timer-card { text-align: center; margin-bottom: 30px; }
+.timer-circle { position: relative; width: 150px; height: 150px; margin: 0 auto 20px; }
+svg { width: 150px; height: 150px; transform: rotate(-90deg); }
+circle { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 8; }
+#progressCircle { stroke: var(--accent); stroke-dasharray: 440; stroke-dashoffset: 440; transition: 0.3s; stroke-linecap: round; }
+#timerDisplay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); margin: 0; font-size: 2rem; }
 
-input::placeholder {
-    color: rgba(255, 255, 255, 0.7);
-}
-
-button {
-    padding: 10px 15px;
-    background: #48bb78;
+.timer-actions button {
+    background: var(--accent);
     color: white;
     border: none;
+    padding: 10px 20px;
     border-radius: 12px;
-    font-weight: bold;
+    font-weight: 700;
     cursor: pointer;
-    transition: 0.2s;
+    letter-spacing: 1px;
 }
 
-button:hover {
-    background: #38a169;
-}
+/* Progress Section */
+.progress-info { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 8px; opacity: 0.8; }
+.progress-container { background: rgba(255,255,255,0.05); height: 10px; border-radius: 20px; margin-bottom: 25px; }
+.progress-bar { background: var(--accent); height: 100%; width: 0%; border-radius: 20px; box-shadow: 0 0 15px var(--accent); transition: 0.5s; }
 
-/* List Items */
-ul {
-    list-style: none;
-    padding: 0;
-}
-
-li {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 12px 15px;
-    margin-bottom: 10px;
-    border-radius: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    animation: fadeIn 0.3s ease;
-}
-
-.delete-btn {
-    background: transparent;
-    padding: 0;
-    font-size: 0.8rem;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+/* Input & List */
+.input-group { display: flex; gap: 10px; margin-bottom: 15px; }
+input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; color: white; }
+ul { list-style: none; padding: 0; max-height: 180px; overflow-y: auto; }
+li { background: rgba(255,255,255,0.03); margin-bottom: 8px; padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+li.completed { opacity: 0.4; background: transparent; }
+li.completed span { text-decoration: line-through; }
