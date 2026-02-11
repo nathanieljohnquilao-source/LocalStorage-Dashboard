@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Study Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="glass-card">
+        <h2>🎯 Study Goals</h2>
+        <div class="input-group">
+            <input type="text" id="taskInput" placeholder="Add a goal...">
+            <button onclick="addTask()">Add</button>
+        </div>
+        <ul id="taskList"></ul>
+    </div>
+
+    <script>
+        // Load tasks on startup
+        window.onload = () => {
+            const savedTasks = JSON.parse(localStorage.getItem("myTasks")) || [];
+            savedTasks.forEach(task => renderTask(task));
+        };
+
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            if (input.value.trim() === '') return;
+
+            renderTask(input.value);
+            saveTask(input.value);
+            input.value = '';
+        }
+
+        function renderTask(text) {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span>${text}</span>
+                <button class="delete-btn" onclick="removeTask(this, '${text}')">❌</button>
+            `;
+            document.getElementById('taskList').appendChild(li);
+        }
+
+        function saveTask(text) {
+            const tasks = JSON.parse(localStorage.getItem("myTasks")) || [];
+            tasks.push(text);
+            localStorage.setItem("myTasks", JSON.stringify(tasks));
+        }
+
+        function removeTask(element, text) {
+            element.parentElement.remove();
+            let tasks = JSON.parse(localStorage.getItem("myTasks")) || [];
+            tasks = tasks.filter(t => t !== text);
+            localStorage.setItem("myTasks", JSON.stringify(tasks));
+        }
+    </script>
+</body>
+</html>
